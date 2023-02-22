@@ -1,17 +1,17 @@
 const express=require("express");
-const {PostModel}=require("../model/post.model");
+const {ProductModel}=require("../model/product.model");
 const jwt = require('jsonwebtoken');
 const {authenticate}=require("../middleware/authenticate")
 
-const postrouter=express.Router();
+const productrouter=express.Router();
 
-postrouter.get("/",async(req,res)=>{
+productrouter.get("/",async(req,res)=>{
     let {token}=req.headers;
 
     if(token){
         jwt.verify(token, 'shhhhh',async function(err, decoded) {
             if(decoded){
-                let note=await PostModel.find({$and:[{user:decoded.userid},req.query]})
+                let note=await ProductModel.find({$and:[{user:decoded.userid},req.query]})
                 res.send(note)
             }
             else{
@@ -25,13 +25,13 @@ postrouter.get("/",async(req,res)=>{
 })
 
 
-postrouter.get("/top",async(req,res)=>{
+productrouter.get("/top",async(req,res)=>{
     let {token}=req.headers;
 
     if(token){
         jwt.verify(token, 'shhhhh',async function(err, decoded) {
             if(decoded){
-                let note=await PostModel.find({user:decoded.userid}).sort({no_of_comments:-1})
+                let note=await ProductModel.find({user:decoded.userid}).sort({no_of_comments:-1})
                 res.send(note)
             }
             else{
@@ -44,15 +44,14 @@ postrouter.get("/top",async(req,res)=>{
     }
 })
 
-postrouter.post("/create",async(req,res)=>{
+productrouter.post("/create",async(req,res)=>{
     let {token}=req.headers;
     if(token){
         jwt.verify(token, 'shhhhh',async function(err, decoded) {
             if(decoded){
-                req.body.user=decoded.userid;
-                let post=new PostModel(req.body);
-                await post.save()
-                res.send({"msg": "Post Created"})
+                // req.body.user=decoded.userid;
+                ProductModel.insertMany(req.body);
+                res.send({"msg": "Product Created"})
             }
             else{
                 res.send({"msg": err})
@@ -66,16 +65,16 @@ postrouter.post("/create",async(req,res)=>{
 })
 
 
-postrouter.patch("/update",authenticate,async(req,res)=>{
+productrouter.patch("/update",authenticate,async(req,res)=>{
 
 })
 
-postrouter.delete("/delete/:_id",authenticate,async(req,res)=>{
+productrouter.delete("/delete/:_id",authenticate,async(req,res)=>{
     
-    await PostModel.findByIdAndDelete(req.params);
+    await ProductModel.findByIdAndDelete(req.params);
     res.send({"msg": "Post Deleted"})
 })
 
 module.exports={
-    postrouter
+    productrouter
 }
